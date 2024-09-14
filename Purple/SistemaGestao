@@ -1,0 +1,123 @@
+create database if not EXISTS SistemaGestao;
+use SistemaGestao;
+
+create table if not EXISTS Usuarios(
+UsuarioID int primary key auto_increment,
+Nome varchar(255) not null,
+Email varchar(155) unique,
+CPF varchar (88) not null unique,
+Telefone varchar(88),
+Endereco varchar(88),
+Senha varchar(88)
+);
+
+create table if not EXISTS Categorias (
+CategoriaID int primary key auto_increment,
+Tipo varchar(88),
+Transacao varchar(88)
+);
+
+create table if not EXISTS Contas(
+ContaID int primary key auto_increment,
+Saldo decimal (18,2),
+IDUsuario int,
+foreign key (IDUsuario) references Usuarios(UsuarioID)
+ON DELETE cascade
+ON UPDATE NO ACTION
+);
+
+create table if not EXISTS Transacoes(
+TransacaoID int primary key auto_increment,
+Valor decimal (18,2),
+Data_realizada datetime,
+Descrição varchar (888),
+IDCategoria int,
+IDConta int,
+foreign key (IDCategoria) references Categorias(CategoriaID)
+ON DELETE cascade
+ON UPDATE NO ACTION,
+foreign key (IDConta) references Contas(ContaID)
+ON DELETE cascade
+ON UPDATE NO ACTION
+);
+
+create table if not EXISTS Metas(
+MetaID int primary key auto_increment,
+Status varchar (88),
+Descrição varchar(88),
+Valor_Meta decimal (18,2),
+Data_Prevista date,
+Data_Inicio datetime,
+Data_Conclusão datetime,
+categoriaID int,
+usuarioID int,
+FOREIGN KEY (categoriaID)
+REFERENCES  categorias(categoriaID)
+ON DELETE cascade
+ON UPDATE NO ACTION,
+FOREIGN KEY (usuarioID)
+REFERENCES  usuarios(usuarioID)
+ON DELETE cascade
+ON UPDATE NO ACTION
+);
+
+use SistemaGestao;
+
+insert into usuarios (Nome, Email, CPF, Telefone, Endereco, Senha) values
+	('Entony', 'entony@gmail.com', '111.555.333-69', '6541-5645', '96665323', 'entony123'),
+    ('Lily', 'Lily@gmail.com', '222.666.444-69', '3575-5645', '65485323', 'lily123'),
+    ('Lillie', 'Lillie@gmail.com', '888.777.999-69', '9314-5645', '32145323', 'lillie123');
+
+
+insert into Categorias (Tipo, transacao)values ('casa','entrada'),('trabalho','entrda'),('pessoal','entrada'),('casa','saida'),('trabalho','saida'),('pessoal','saida');
+insert into Contas(Saldo, IDUsuario) values (5000.00, 1),(6000.00, 2),(8000.00, 3);
+
+insert into transacoes (Valor, Data_realizada, Descrição, IDCategoria, IDConta) values
+(50.00, '2024-08-11 22:20:37', 'Aluguel do meu filho', 1, 1),
+(60.00, '2024-08-12 21:30:34', 'Hora extra', 2, 2),
+(70.00, '2024-08-13 19:15:20', 'Achei no bolso', 3, 3),
+(-50.00, '2024-08-10 18:25:56', 'Ração pra gato', 4, 1),
+(-60.00, '2024-08-09 17:35:35', 'Café da tarde', 5, 2),
+(-70.00, '2024-08-08 16:40:30', 'Controle de Xbox', 6, 3);
+
+insert into Metas (Status, Descrição, Valor_Meta, Data_Prevista, Data_Inicio, Data_Conclusão, categoriaID, usuarioID) values
+('Em andamento', 'Economizar 100 reais com o gasto em jogos', 100.00, '2024-08-15', '2024-08-11 21:55:05', null, 1, 1),
+('Não iniciada', 'Conseguir 100 de horas extra',  100.00, '2024-08-16', '2024-08-12 11:55:45', null , 2, 2),
+('Iniciada', 'Conseguir 400 reais cantando na rua',  100.00, '2024-08-17','2024-08-10 15:45:05', '2024-08-13 20:32:55', 3, 3);
+
+use SistemaGestao;
+
+select * from transacoes where valor < 0;
+select * from transacoes where valor > 0;
+select * from categorias;
+select * from usuarios;
+
+use SistemaGestao;
+
+select  
+(select sum(valor) from transacoes where IDCategoria = '1') as TotalRecebidoCasa,
+(select sum(valor) from transacoes where IDCategoria = '2') as TotalRecebidoTrabalho,
+(select sum(valor) from transacoes where IDCategoria = '3') as TotalRecebidoPessoal,
+(select sum(valor) from transacoes where IDCategoria = '4') as TotalGastoCasa,
+(select sum(valor) from transacoes where IDCategoria = '5') as TotalGastoTrabalho,
+(select sum(valor) from transacoes where IDCategoria = '6') as TotalGastoPessoal
+from Transacoes group by 1; 
+
+#vezesquetevedereceita
+select count(*) as TotalReceitas
+from transacoes
+where IDconta = '1' and IDCategoria < 4;
+
+#vezesquetevededespesa
+select count(*) as TotalDespesas
+from transacoes
+where IDconta = '1' and IDCategoria > 4;
+
+#totaldetodasasdespesasereceitas
+Select
+(select sum(valor) from transacoes where IDconta = 2 and IDcategoria < 4) as TotalDeTodasAsReceitas,
+(select sum(valor)  from transacoes where IDconta = 2 and IDcategoria > 3) as TotalDeTodasAsDespesas
+from transacoes group by 1;
+
+#valorfinaldomes
+select sum(valor) from transacoes;
